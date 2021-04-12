@@ -303,3 +303,25 @@ def test_password_changes(client, dummy_user):
         expected_message="Your password has been changed",
         expected_category="success",
     )
+
+def test_password_changes_for_mixed_case_username(client, dummy_user):
+    """Verify that password changes for user with mixed case username"""
+    with fml_testing.mock_sends(
+        UserUpdateV1(
+            {"msg": {"agent": "dummy", "user": "dUmMy", "fields": ["password"]}}
+        )
+    ):
+        result = client.post(
+            '/password-reset?username=dUmMy',
+            data={
+                "current_password": "dummy_password",
+                "password": "secretpw",
+                "password_confirm": "secretpw",
+            },
+        )
+    assert_redirects_with_flash(
+        result,
+        expected_url="/",
+        expected_message="Your password has been changed",
+        expected_category="success",
+    )
